@@ -47,7 +47,7 @@ export default function Home() {
     setArticle({ title: '', content: '기사를 가져오는 중입니다...' });
 
     try {
-      const response = await fetch('http://localhost:8000/api/scrape', {
+      const response = await fetch('/api/scrape', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url }),
