@@ -266,25 +266,56 @@ export default function Home() {
                   <h3 style={styles.quizWord}>{quiz.question}</h3>
                   <div style={styles.optionsContainer}>
                     {quiz.options.map((option, index) => {
-                      let buttonStyle = { ...styles.optionButton } as any;
-                      
-                      if (selectedAnswer) {
+                      const getButtonStyle = () => {
+                        if (!selectedAnswer) {
+                          return styles.optionButton;
+                        }
+                        
                         if (option === quiz.answer) {
                           // 정답은 항상 초록색으로 표시
-                          buttonStyle = { ...buttonStyle, ...styles.correctOption };
+                          return {
+                            padding: '20px',
+                            fontSize: '1.1rem',
+                            border: '2px solid #16a34a',
+                            borderRadius: '8px',
+                            background: '#22c55e',
+                            color: 'white',
+                            cursor: 'not-allowed',
+                            transition: 'all 0.3s ease',
+                            fontWeight: 'bold'
+                          };
                         } else if (option === selectedAnswer && option !== quiz.answer) {
                           // 선택한 오답은 빨간색으로 표시
-                          buttonStyle = { ...buttonStyle, ...styles.incorrectOption };
+                          return {
+                            padding: '20px',
+                            fontSize: '1.1rem',
+                            border: '2px solid #dc2626',
+                            borderRadius: '8px',
+                            background: '#ef4444',
+                            color: 'white',
+                            cursor: 'not-allowed',
+                            transition: 'all 0.3s ease',
+                            fontWeight: 'bold'
+                          };
                         } else {
                           // 선택되지 않은 옵션들은 회색으로 표시
-                          buttonStyle = { ...buttonStyle, ...styles.disabledOption };
+                          return {
+                            padding: '20px',
+                            fontSize: '1.1rem',
+                            border: '2px solid #e5e7eb',
+                            borderRadius: '8px',
+                            background: '#f3f4f6',
+                            color: '#9ca3af',
+                            cursor: 'not-allowed',
+                            transition: 'all 0.3s ease'
+                          };
                         }
-                      }
+                      };
                       
                       return (
                         <button 
                           key={index} 
-                          style={buttonStyle}
+                          style={getButtonStyle()}
                           onClick={() => handleAnswerSelect(option)}
                           disabled={!!selectedAnswer}
                         >
@@ -464,24 +495,6 @@ const styles = {
     background: '#fff',
     cursor: 'pointer',
     transition: 'all 0.3s ease'
-  },
-  correctOption: {
-    backgroundColor: '#22c55e',
-    color: 'white',
-    border: '2px solid #16a34a',
-    fontWeight: 'bold'
-  },
-  incorrectOption: {
-    backgroundColor: '#ef4444',
-    color: 'white',
-    border: '2px solid #dc2626',
-    fontWeight: 'bold'
-  },
-  disabledOption: {
-    backgroundColor: '#f3f4f6',
-    color: '#9ca3af',
-    border: '2px solid #e5e7eb',
-    cursor: 'not-allowed'
   },
   quizFeedback: {
     marginTop: '20px',
