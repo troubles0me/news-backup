@@ -16,10 +16,21 @@ if ! command -v node &> /dev/null; then
 fi
 
 # Python3 및 pip 설치 확인
+echo "Python3 설치 상태 확인 중..."
 if ! command -v python3 &> /dev/null; then
     echo "⚠️  Python3가 설치되지 않았습니다. 설치 중..."
     sudo apt update
-    sudo apt install -y python3 python3-pip
+    sudo apt install -y python3 python3-pip python3-venv
+else
+    echo "✅ Python3가 이미 설치되어 있습니다."
+fi
+
+if ! command -v pip3 &> /dev/null; then
+    echo "⚠️  pip3가 설치되지 않았습니다. 설치 중..."
+    sudo apt update
+    sudo apt install -y python3-pip
+else
+    echo "✅ pip3가 이미 설치되어 있습니다."
 fi
 
 # nginx 설치 확인
@@ -64,19 +75,34 @@ cd final.back/backend
 
 # Python 버전 확인
 echo "Python 버전: $(python3 --version)"
-echo "pip 버전: $(pip3 --version)"
+echo "pip 버전: $(python3 -m pip --version)"
 
-# Python 의존성 설치 (사용자 모드로 설치)
+# 가상환경 생성 및 활성화 (권한 문제 해결)
+if [ ! -d "venv" ]; then
+    echo "Python 가상환경 생성 중..."
+    python3 -m venv venv
+fi
+
+echo "가상환경 활성화 중..."
+source venv/bin/activate
+
+# pip 업그레이드
+echo "pip 업그레이드 중..."
+python -m pip install --upgrade pip
+
+# Python 의존성 설치 (가상환경에서)
 echo "Python 패키지 설치 중..."
 if [ -f requirements.txt ]; then
-    pip3 install --user -r requirements.txt
+    echo "requirements.txt에서 패키지 설치 중..."
+    python -m pip install -r requirements.txt
 else
-    pip3 install --user fastapi uvicorn requests beautifulsoup4 python-dotenv openai
+    echo "개별 패키지 설치 중..."
+    python -m pip install fastapi uvicorn[standard] requests beautifulsoup4 python-dotenv openai
 fi
 
 # 설치된 패키지 확인
 echo "설치된 패키지 확인:"
-pip3 list | grep -E "(fastapi|uvicorn|requests|beautifulsoup4|python-dotenv|openai)"
+python -m pip list | grep -E "(fastapi|uvicorn|requests|beautifulsoup4|python-dotenv|openai)" || echo "⚠️  일부 패키지가 설치되지 않았을 수 있습니다."
 
 # 환경 변수 파일이 없다면 생성
 if [ ! -f .env ]; then
@@ -94,18 +120,19 @@ fi
 # 백엔드 서버 시작 (백그라운드)
 echo "🔥 백엔드 서버 시작 (포트 8000)"
 
-# PATH에 사용자 패키지 경로 추가
-export PATH="$HOME/.local/bin:$PATH"
-
-# uvicorn 경로 확인
-if ! command -v uvicorn &> /dev/null; then
-    echo "⚠️  uvicorn을 찾을 수 없습니다. 다시 설치 중..."
-    python3 -m pip install --user uvicorn
+# uvicorn 설치 및 실행 확인
+echo "uvicorn 설치 상태 확인 중..."
+if command -v uvicorn &> /dev/null; then
+    echo "✅ uvicorn이 가상환경에서 사용 가능합니다: $(which uvicorn)"
+    nohup uvicorn gptchatbot:app --host 0.0.0.0 --port 8000 --reload > backend.log 2>&1 &
+else
+    echo "⚠️  uvicorn 명령어를 찾을 수 없습니다. python -m uvicorn으로 실행합니다."
+    nohup python -m uvicorn gptchatbot:app --host 0.0.0.0 --port 8000 --reload > backend.log 2>&1 &
 fi
 
-# 백엔드 서버 시작
-echo "uvicorn 경로: $(which uvicorn || echo 'uvicorn을 찾을 수 없음')"
-nohup python3 -m uvicorn gptchatbot:app --host 0.0.0.0 --port 8000 --reload > backend.log 2>&1 &
+# 백그라운드 프로세스 ID 저장
+BACKEND_PID=$!
+echo "백엔드 서버 PID: $BACKEND_PID"
 
 # 서버 시작 대기
 echo "⏳ 백엔드 서버 시작 대기 중..."
