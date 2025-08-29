@@ -266,7 +266,7 @@ export default function Home() {
                   <h3 style={styles.quizWord}>{quiz.question}</h3>
                   <div style={styles.optionsContainer}>
                     {quiz.options.map((option, index) => {
-                      let buttonStyle = { ...styles.optionButton };
+                      let buttonStyle = { ...styles.optionButton } as any;
                       
                       if (selectedAnswer) {
                         if (option === quiz.answer) {
