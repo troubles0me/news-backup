@@ -47,7 +47,7 @@ export default function Home() {
     setArticle({ title: '', content: '기사를 가져오는 중입니다...' });
 
     try {
-      const response = await fetch('http://20.41.113.134:8000/api/scrape', {
+      const response = await fetch('http://20.196.66.12:8000/api/scrape', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url }),
@@ -80,7 +80,7 @@ export default function Home() {
     setChatInput('');
 
     try {
-      const response = await fetch('http://20.41.113.134:8000/api/chat', {
+      const response = await fetch('http://20.196.66.12:8000/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ word: currentChatInput, context: article.content }),
@@ -134,7 +134,7 @@ export default function Home() {
       setIsReviewMode(false);
 
     } else {
-      const response = await fetch('http://20.41.113.134:8000/api/quiz', {
+      const response = await fetch('http://20.196.66.12:8000/api/quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ entries: availableEntries }),

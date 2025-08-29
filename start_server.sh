@@ -75,7 +75,7 @@ fi
 
 # nginx 설정 업데이트
 echo "🌐 nginx 설정 업데이트 중..."
-sudo cp ../final.front/mknewsquiz.conf /etc/nginx/sites-available/mknewsquiz
+sudo cp ../../final.front/mknewsquiz.conf /etc/nginx/sites-available/mknewsquiz
 sudo ln -sf /etc/nginx/sites-available/mknewsquiz /etc/nginx/sites-enabled/
 
 # 기본 nginx 설정 비활성화
@@ -92,9 +92,9 @@ fi
 
 echo ""
 echo "🎉 서버 시작 완료!"
-echo "🌍 프론트엔드: http://20.41.113.134"
-echo "🔧 백엔드: http://20.41.113.134:8000"
-echo "📚 API 문서: http://20.41.113.134:8000/docs"
+echo "🌍 프론트엔드: http://20.196.66.12"
+echo "🔧 백엔드: http://20.196.66.12:8000"
+echo "📚 API 문서: http://20.196.66.12:8000/docs"
 echo "📊 백엔드 로그: tail -f final.back/backend/backend.log"
 
 # 실행 중인 프로세스 확인

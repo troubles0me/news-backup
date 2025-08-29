@@ -23,7 +23,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 # --- 2. CORS 설정 ---
-origins = ["http://localhost:3000", "http://20.41.113.134", "http://20.41.113.134:80"]
+origins = ["http://localhost:3000", "http://20.196.66.12", "http://20.196.66.12:80"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
