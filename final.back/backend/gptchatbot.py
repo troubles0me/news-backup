@@ -60,25 +60,10 @@ def handle_scrape(request: ScrapeRequest):
         return article
     return {"error": "Failed to scrape article"}
 
-# gptchatbot.py 파일의 이 부분을 수정하세요.
-
-@app.get("/")
-def read_root():
-    return {"status": "Backend server is running!"}
-
 # 테스트를 위해 추가했던 API 엔드포인트
 @app.get("/api/")
 def read_api_root():
     return {"message": "API server is working!"}
-
-# 여기가 오류가 발생한 부분입니다.
-# 들여쓰기를 포함하여 아래 내용이 올바른지 확인하세요.
-@app.post("/api/scrape")
-def handle_scrape(request: ScrapeRequest):
-    article = scrape_maekyung_article(request.url)
-    if article:
-        return article
-    return {"error": "Failed to scrape article"}
 
 
 @app.post("/api/chat")

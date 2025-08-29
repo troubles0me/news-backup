@@ -117,6 +117,7 @@ export default function Home() {
   const fetchNextProblem = async (reviewMode: boolean) => {
     setIsQuizLoading(true);
     setQuizFeedback('');
+    setSelectedAnswer(''); // 다음 문제로 넘어갈 때 선택 상태 초기화
 
     const sourceEntries = reviewMode ? incorrectEntries : learnedEntries;
     const currentQuizzedList = reviewMode ? reviewQuizzedWords : quizzedWords;
@@ -181,15 +182,20 @@ export default function Home() {
     fetchNextProblem(true);
   };
 
+  const [selectedAnswer, setSelectedAnswer] = useState<string>('');
+
   const handleAnswerSelect = (selectedOption: string) => {
-    if (!quiz) return;
+    if (!quiz || selectedAnswer) return; // 이미 답을 선택했으면 더 이상 선택 불가
+    
+    setSelectedAnswer(selectedOption);
+    
     if (selectedOption === quiz.answer) {
-      setQuizFeedback('정답입니다! 🎉');
+      setQuizFeedback('🎉 정답입니다!');
       if (isReviewMode) {
         setIncorrectEntries(prev => prev.filter(entry => entry.word !== quiz.question));
       }
     } else {
-      setQuizFeedback(`오답입니다. 정답은 "${quiz.answer}"입니다.`);
+      setQuizFeedback(`❌ 오답입니다. 정답은 "${quiz.answer}"입니다.`);
       if (!isReviewMode) {
         const incorrectEntry = learnedEntries.find(entry => entry.word === quiz.question);
         if (incorrectEntry) {
@@ -206,6 +212,7 @@ export default function Home() {
   const handleQuitQuiz = () => {
     setQuiz(null);
     setQuizFeedback('');
+    setSelectedAnswer(''); // 퀴즈 나갈 때 선택 상태 초기화
     setIsReviewMode(false);
     // 퀴즈 기록을 초기화하여 isQuizOver가 false가 되도록 함
     setQuizzedWords([]); 
@@ -258,20 +265,40 @@ export default function Home() {
                   <p style={styles.quizInstruction}>다음 단어의 뜻으로 알맞은 것을 고르세요.</p>
                   <h3 style={styles.quizWord}>{quiz.question}</h3>
                   <div style={styles.optionsContainer}>
-                    {quiz.options.map((option, index) => (
-                      <button 
-                        key={index} 
-                        style={styles.optionButton}
-                        onClick={() => handleAnswerSelect(option)}
-                        disabled={!!quizFeedback}
-                      >
-                        {option}
-                      </button>
-                    ))}
+                    {quiz.options.map((option, index) => {
+                      let buttonStyle = { ...styles.optionButton };
+                      
+                      if (selectedAnswer) {
+                        if (option === quiz.answer) {
+                          // 정답은 항상 초록색으로 표시
+                          buttonStyle = { ...buttonStyle, ...styles.correctOption };
+                        } else if (option === selectedAnswer && option !== quiz.answer) {
+                          // 선택한 오답은 빨간색으로 표시
+                          buttonStyle = { ...buttonStyle, ...styles.incorrectOption };
+                        } else {
+                          // 선택되지 않은 옵션들은 회색으로 표시
+                          buttonStyle = { ...buttonStyle, ...styles.disabledOption };
+                        }
+                      }
+                      
+                      return (
+                        <button 
+                          key={index} 
+                          style={buttonStyle}
+                          onClick={() => handleAnswerSelect(option)}
+                          disabled={!!selectedAnswer}
+                        >
+                          {option}
+                        </button>
+                      );
+                    })}
                   </div>
                   {quizFeedback && (
                     <div style={styles.quizFeedback}>
-                      <p>{quizFeedback}</p>
+                      <p style={{
+                        ...styles.feedbackText,
+                        color: quizFeedback.includes('정답') ? '#22c55e' : '#ef4444'
+                      }}>{quizFeedback}</p>
                       <button style={styles.nextQuizButton} onClick={() => fetchNextProblem(isReviewMode)}>다음 문제</button>
                     </div>
                   )}
@@ -435,12 +462,40 @@ const styles = {
     border: '2px solid #ddd',
     borderRadius: '8px',
     background: '#fff',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transition: 'all 0.3s ease'
+  },
+  correctOption: {
+    backgroundColor: '#22c55e',
+    color: 'white',
+    border: '2px solid #16a34a',
+    fontWeight: 'bold'
+  },
+  incorrectOption: {
+    backgroundColor: '#ef4444',
+    color: 'white',
+    border: '2px solid #dc2626',
+    fontWeight: 'bold'
+  },
+  disabledOption: {
+    backgroundColor: '#f3f4f6',
+    color: '#9ca3af',
+    border: '2px solid #e5e7eb',
+    cursor: 'not-allowed'
   },
   quizFeedback: {
     marginTop: '20px',
     fontSize: '1.2rem',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    textAlign: 'center',
+    padding: '15px',
+    borderRadius: '8px',
+    backgroundColor: '#f8f9fa'
+  },
+  feedbackText: {
+    fontSize: '1.3rem',
+    fontWeight: 'bold',
+    margin: '0 0 15px 0'
   },
   nextQuizButton: {
     marginTop: '10px',
