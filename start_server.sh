@@ -32,16 +32,51 @@ fi
 # 프론트엔드 빌드
 echo "📦 프론트엔드 빌드 중..."
 cd final.front
+
+# Node.js 버전 확인
+echo "Node.js 버전: $(node --version)"
+echo "npm 버전: $(npm --version)"
+
+# package-lock.json이 있으면 제거하고 깨끗하게 설치
+if [ -f package-lock.json ]; then
+    echo "기존 package-lock.json 제거 중..."
+    rm package-lock.json
+fi
+
+if [ -d node_modules ]; then
+    echo "기존 node_modules 제거 중..."
+    rm -rf node_modules
+fi
+
+# 패키지 설치
+echo "패키지 설치 중..."
 npm install
+
+# 빌드
+echo "프론트엔드 빌드 시작..."
 npm run build
+
 cd ..
 
 # 백엔드 의존성 설치 및 실행
 echo "🐍 백엔드 시작 중..."
 cd final.back/backend
 
-# Python 의존성 설치
-pip3 install fastapi uvicorn requests beautifulsoup4 python-dotenv openai
+# Python 버전 확인
+echo "Python 버전: $(python3 --version)"
+echo "pip 버전: $(pip3 --version)"
+
+# Python 의존성 설치 (사용자 모드로 설치)
+echo "Python 패키지 설치 중..."
+if [ -f requirements.txt ]; then
+    pip3 install --user -r requirements.txt
+else
+    pip3 install --user fastapi uvicorn requests beautifulsoup4 python-dotenv openai
+fi
+
+# 설치된 패키지 확인
+echo "설치된 패키지 확인:"
+pip3 list | grep -E "(fastapi|uvicorn|requests|beautifulsoup4|python-dotenv|openai)"
 
 # 환경 변수 파일이 없다면 생성
 if [ ! -f .env ]; then
@@ -58,7 +93,19 @@ fi
 
 # 백엔드 서버 시작 (백그라운드)
 echo "🔥 백엔드 서버 시작 (포트 8000)"
-nohup uvicorn gptchatbot:app --host 0.0.0.0 --port 8000 --reload > backend.log 2>&1 &
+
+# PATH에 사용자 패키지 경로 추가
+export PATH="$HOME/.local/bin:$PATH"
+
+# uvicorn 경로 확인
+if ! command -v uvicorn &> /dev/null; then
+    echo "⚠️  uvicorn을 찾을 수 없습니다. 다시 설치 중..."
+    python3 -m pip install --user uvicorn
+fi
+
+# 백엔드 서버 시작
+echo "uvicorn 경로: $(which uvicorn || echo 'uvicorn을 찾을 수 없음')"
+nohup python3 -m uvicorn gptchatbot:app --host 0.0.0.0 --port 8000 --reload > backend.log 2>&1 &
 
 # 서버 시작 대기
 echo "⏳ 백엔드 서버 시작 대기 중..."
